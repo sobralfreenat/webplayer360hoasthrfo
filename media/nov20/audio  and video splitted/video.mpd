@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MPD
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="urn:mpeg:DASH:schema:MPD:2011"
+  xsi:schemaLocation="urn:mpeg:DASH:schema:MPD:2011"
+  type="static"
+  mediaPresentationDuration="PT152.24S"
+  minBufferTime="PT1S"
+  profiles="urn:webm:dash:profile:webm-on-demand:2012">
+<Period id="0" start="PT0S" duration="PT152.24S" >
+<AdaptationSet id="0" mimeType="video/webm" codecs="vp9" lang="eng" width="3840" height="1920" bitstreamSwitching="true" subsegmentAlignment="true" subsegmentStartsWithSAP="0">
+<Representation id="0" bandwidth="1487921">
+<BaseURL>anechoicplustv_without_metadata_nor_audio.webm</BaseURL>
+<SegmentBase
+  indexRange="25382588-25383108">
+<Initialization
+  range="0-686" />
+</SegmentBase>
+</Representation>
+</AdaptationSet>
+</Period>
+</MPD>
