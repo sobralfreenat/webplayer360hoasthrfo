@@ -1,43 +1,119 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <title>HOAST360</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
 </head>
-
 <body>
+  <a-scene>
+    <a-assets>
+      <video id="video" src="https://d1yei2z3i6k35z.cloudfront.net/6682800/660726ef15105_VDO_POC_BINLAB_publi_Rock_v2.mp4" autoplay loop crossorigin="anonymous"></video>
+      <audio id="audio" src="https://d1yei2z3i6k35z.cloudfront.net/6682800/6605ad3bb02bc_6605aa2c20fe9_BINAULAB_Rock_Publi3dJingles2.mp3" crossorigin="anonymous"></audio>
+    </a-assets>
 
-    <div id="overlay">
-        <div id="topfill"></div>
-        <div id="headers">
-            <h1><span id="h1">HOAST360</span></h1>
-            <p id="hoast-text">Higher Order Ambisonics Spatial Transform <br> 360 Degree Video Player</p>
-        </div>
-    </div>
+    <a-entity id="video-entity" position="0 0 -5">
+      <a-video src="#video" width="4" height="2.25" video-controller></a-video>
+    </a-entity>
 
-    <button onclick="init()">load</button>
-    <button onclick="stop()">stop</button>
-    
-    <video-js id='hoast360-player' class='video-js vjs-fluid vjs-big-play-centered ' controls preload='auto' crossorigin="anonymous" data-setup='{}'>
-        <p class='vjs-no-js'>
-          To view this video please enable JavaScript, and consider upgrading to a web browser that
-          <a href='https://videojs.com/html5-video-support/' target='_blank'>supports HTML5 video</a>
-        </p>
-    </video-js>
+    <a-entity id="audio-entity" sound="src: #audio; autoplay: true; loop: true;"></a-entity>
 
-    <script src="./dist/hoast360.bundle.js"></script>
-    <script>
-        var hoast360 = new HOAST360();
+    <a-entity id="video-controls" position="-2 1.5 -5">
+      <a-text id="delay-label" value="Delay: 0" position="0 0 0"></a-text>
+      <a-entity slider="min: -1; max: 1; step: 0.1; value: -0.1" position="3 -2.9 0"
+                event-set__click="_target: #video-entity.components.video-controller; _delay: ${this.components.slider.data.value}"
+                event-set__click="_target: #delay-label; value: Delay: ${this.components.slider.data.value.toFixed(1)}"></a-entity>
+      <a-entity id="video-mute-button" position="1.7 -2.9  0" geometry="primitive: box; width: 0.5; height: 0.5; depth: 0.1"
+                material="color: #C38A2C" text="value: Mute Vdo; align: center" mute-video></a-entity>
+      <a-entity id="audio-mute-button" position="0.3 -2.9 0" geometry="primitive: box; width: 0.5; height: 0.5; depth: 0.1"
+                material="color: #FDB53E" text="value: Mute AS; align: center" mute-audio></a-entity>
+    </a-entity>
 
-        function init() {
-            hoast360.initialize("media/novatentativajoinedmanifest/manifest.mpd", "irs/hoast_o1_01-04ch.wav", 1);
+    <a-entity camera wasd-controls look-controls>
+      <a-cursor></a-cursor>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    AFRAME.registerComponent('video-controller', {
+      schema: {
+        delay: {type: 'number', default: 0}
+      },
+
+      init: function() {
+        this.videoEl = this.el.components.material.material.map.image;
+      },
+
+      update: function() {
+        if (this.videoEl) {
+          this.videoEl.currentTime = this.data.delay;
         }
+      }
+    });
 
-        function stop() {
-            hoast360.reset();
-        }
-    </script>
+    AFRAME.registerComponent('slider', {
+      schema: {
+        min: {type: 'number', default: 0},
+        max: {type: 'number', default: 1},
+        step: {type: 'number', default: 0.1},
+        value: {type: 'number', default: 0}
+      },
+
+      init: function() {
+        var el = this.el;
+        var data = this.data;
+
+        el.setAttribute('geometry', {
+          primitive: 'box',
+          width: 1,
+          height: 0.1,
+          depth: 0.1
+        });
+
+        el.setAttribute('material', {color: '#ccc'});
+
+        el.addEventListener('click', function(evt) {
+          var sliderWidth = 1;
+          var sliderX = evt.detail.intersection.point.x;
+          var value = (sliderX + sliderWidth / 2) / sliderWidth;
+          value = data.min + (data.max - data.min) * value;
+          value = Math.round(value / data.step) * data.step;
+          el.setAttribute('slider', 'value', value);
+        });
+      }
+    });
+
+    AFRAME.registerComponent('mute-video', {
+      init: function() {
+        var el = this.el;
+        var videoEl = document.querySelector('#video');
+
+        el.addEventListener('click', function() {
+          if (videoEl.muted) {
+            videoEl.muted = false;
+            el.setAttribute('text', 'value', 'Mute Vdo');
+          } else {
+            videoEl.muted = true;
+            el.setAttribute('text', 'value', 'Unmute Vdo');
+          }
+        });
+      }
+    });
+
+    AFRAME.registerComponent('mute-audio', {
+      init: function() {
+        var el = this.el;
+        var audioEl = document.querySelector('#audio-entity');
+
+        el.addEventListener('click', function() {
+          if (audioEl.components.sound.isPlaying) {
+            audioEl.components.sound.pauseSound();
+            el.setAttribute('text', 'value', 'Unmute AS');
+          } else {
+            audioEl.components.sound.playSound();
+            el.setAttribute('text', 'value', 'Mute AS');
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>
